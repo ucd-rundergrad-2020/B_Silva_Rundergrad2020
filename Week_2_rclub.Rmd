@@ -1,0 +1,31 @@
+---
+title: "Week_2_rclub"
+author: "Brennan"
+date: "4/28/2020"
+output: 
+  html_document: 
+    keep_md: yes
+---
+```{r}
+library(tidyverse)
+```
+
+```{r}
+data_parsed <- read.csv("~/Downloads/master_flowering_time_data_2019_10_15.csv") 
+```
+
+```{r}
+data_parsed$germ = as.Date(data_parsed$germ, format = "%m_%d_%Y")
+data_parsed$yellow = as.Date(data_parsed$yellow, format = "%m_%d_%Y")
+data_parsed$flowering = as.Date(data_parsed$flowering, format = "%m_%d_%Y")
+data_parsed$final = as.Date(data_parsed$final, format = "%m_%d_%Y")
+```
+```{r}
+str(data_parsed)
+```
+```{r}
+data_parsed_1 <- mutate(data_parsed, flowering_time = flowering - germ, total_time = final - germ )
+```
+```{r}
+view (data_parsed_1)
+```
