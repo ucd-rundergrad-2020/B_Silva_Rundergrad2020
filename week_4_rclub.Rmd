@@ -1,0 +1,157 @@
+---
+title: "Week 4"
+author: "Brennan"
+date: "5/11/2020"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+## Video 1
+```{r}
+library(tidyverse)
+```
+
+```{r}
+LungCapData <- read.delim("~/Downloads/LungCapData.txt")
+```
+```{r}
+view(LungCapData)
+```
+
+```{r}
+boxplot(LungCapData$LungCap)
+```
+
+# Ho: mu < 8
+# one-sided 95% confidence interval for mu
+
+```{r}
+t.test(LungCapData$LungCap, mu=8, alternative="less", conf.level=0.95)
+```
+# two-sided
+```{r}
+t.test(LungCapData$LungCap, mu=8, alternative="two.side", conf.level=0.95)
+```
+- two sided is the default argument
+```{r}
+t.test(LungCapData$LungCap, mu=8, alternative="two.side", conf.level=0.99)
+```
+```{r}
+TEST <- t.test(LungCapData$LungCap, mu=8, alternative="two.side", conf.level=0.99)
+```
+- Attributes command
+```{r}
+attributes(TEST)
+```
+```{r}
+TEST$conf.int
+TEST$p.value
+```
+
+## Video 2
+```{r}
+boxplot(LungCapData$LungCap~LungCapData$Smoke)
+```
+
+# Ho: Mean lung capacity of smokers = of non smokers
+# Two-sided test
+# assume non-equal variances
+
+```{r}
+t.test(LungCapData$LungCap~LungCapData$Smoke, mu=0, alt="two.sided", conf=0.95, var.eq=F,paired=F)
+```
+- all arguments above are default!
+```{r}
+t.test(LungCapData$LungCap[LungCapData$Smoke == "no"], LungCapData$LungCap[LungCapData$Smoke == "yes"])
+```
+```{r}
+t.test(LungCapData$LungCap~LungCapData$Smoke, mu=0, alt="two.sided", conf=0.95, var.eq=T,paired=F)
+```
+- how to decided if we should use var.eq= T or F
+1. Look at boxplot and see if variance is comparable
+2. Use var() to compare
+```{r}
+var(LungCapData$LungCap[LungCapData$Smoke == "no"])
+var(LungCapData$LungCap[LungCapData$Smoke == "yes"])
+```
+# Levene's Test
+# Ho: population variances are equal
+
+```{r}
+library(car)
+```
+```{r}
+leveneTest(LungCapData$LungCap~LungCapData$Smoke)
+```
+## Mitchell's Data
+```{r}
+Dull.560_All_Results <- read_csv("~/Downloads/Dull 560_All_Results.csv")
+```
+
+```{r}
+ggplot(Dull.560_All_Results, aes(Period, RAE, color = Genotype))+
+  geom_point() + 
+  labs(title = "Period vs Relative Amplitude Error",
+      x = "Period (hours)",
+       y = "RAE")+
+  scale_y_continuous(breaks = c(0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1))+
+  scale_x_continuous(breaks = c(15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35))
+```
+```{r}
+ggplot(Dull.560_All_Results, aes(Period, RAE, color = Genotype))+
+  geom_point() + 
+  labs(title = "Period vs Relative Amplitude Error",
+      x = "Period (hours)",
+       y = "RAE")+
+  scale_y_continuous(breaks = c(0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1))+
+  scale_x_continuous(breaks = c(15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35))+
+  facet_wrap(~Genotype)
+```
+```{r}
+RAE_greater <- filter(Dull.560_All_Results, RAE > 0.6)
+```
+```{r}
+col_data <- filter(RAE_greater, Genotype == "col")
+T2_95_01_data <- filter(RAE_greater, Genotype == "8x T2 95.01")
+T2_96_14_data <- filter(RAE_greater, Genotype == "8x T2 96.14")
+T2_97_30_data <- filter(RAE_greater, Genotype == "8x T2 97.30")
+```
+```{r}
+view(col_data)
+```
+```{r}
+view(T2_95_01_data)
+```
+```{r}
+view(T2_96_14_data)
+```
+```{r}
+view(T2_97_30_data)
+```
+```{r}
+summary(col_data$Period)
+summary(T2_95_01_data$Period)
+summary(T2_96_14_data$Period)
+summary(T2_97_30_data$Period)
+```
+```{r}
+Dull_data <- gather(Dull.560_All_Results, "12":"176", key = "Time", value = "Luminescence")
+```
+```{r}
+Dull_data$Time<- as.integer(Dull_data$Time)
+str(Dull_data)
+```
+```{r}
+dull_data <- filter(Dull_data, Time > 35)
+head(dull_data)
+```
+```{r}
+ggplot(dull_data, aes(Time, Luminescence, color = Genotype))+
+  geom_point()+
+  labs(title = "Luminescense over Time",
+      x = "Time (Zeitberg hours)",
+       y = "Luminescence")+
+  #scale_y_continuous(breaks = c(0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1))+
+  scale_x_continuous(breaks = seq(36,176, 16))
+```
