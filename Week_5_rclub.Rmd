@@ -1,0 +1,247 @@
+---
+title: "Week_5_rclub"
+author: "Brennan"
+date: "5/17/2020"
+output: 
+  html_document: 
+    keep_md: yes
+---
+# 4.3 
+```{r}
+library(tidyverse)
+```
+
+```{r}
+LungCapData <- read.delim("~/Downloads/LungCapData.txt")
+```
+
+
+```{r}
+boxplot(LungCapData$LungCap~LungCapData$Smoke)
+```
+
+### Ho: Median Lung Capcity of Smokers = that of non smokers
+
+```{r}
+wilcox.test(LungCapData$LungCap~LungCapData$Smoke, mu = 0, alt="two.sided", conf.int=T, conf.level=0.95, paired=F, exact=T, correct=T)
+```
+```{r}
+wilcox.test(LungCapData$LungCap~LungCapData$Smoke, mu = 0, alt="two.sided", conf.int=T, conf.level=0.95, paired=F, exact=F, correct=T)
+```
+### Initital settings are the default except conf.int = T
+
+# 4.4
+```{r}
+cd <- read.csv("~/Downloads/ChickData.csv") 
+```
+
+```{r}
+boxplot(cd$weight~cd$feed, las =1, ylab="Weight (g)", xlab="feed", main="Weight by feed")
+```
+### calculate the difference in sample means
+```{r}
+mean(cd$weight[cd$feed =="casein"])
+mean(cd$weight[cd$feed =="meatmeal"])
+```
+```{r}
+test.stat1 <- abs(mean(cd$weight[cd$feed =="casein"])-mean(cd$weight[cd$feed =="meatmeal"]))
+```
+```{r}
+test.stat1
+```
+```{r}
+median(cd$weight[cd$feed =="casein"])
+median(cd$weight[cd$feed =="meatmeal"])
+```
+```{r}
+test.stat2 <- abs(median(cd$weight[cd$feed =="casein"])-median(cd$weight[cd$feed =="meatmeal"]))
+```
+```{r}
+test.stat2
+```
+
+
+###Bootstrapping
+```{r}
+set.seed(112358) # for reproducibility
+```
+```{r}
+n <- length(cd$feed) # number of observations to sample
+n
+B <- 10000 # of bootstrap samples
+variable <- cd$weight #the vairable we will sample from
+```
+### Now get those boostrap samples (w/o loops)
+```{r}
+BootstrapSamples <- matrix(sample(variable, size = n*B, replace=T), nrow=n,ncol=B)
+```
+### lets take a moment to discuss what that code is doing
+```{r}
+dim(BootstrapSamples)
+```   
+### now calculate the means for each of the bootstrap samples
+```{r}
+dim(BootstrapSamples)
+```     
+```{r}
+Boot.test.stat1 <- rep(0, B)
+Boot.test.stat2 <- rep(0, B)
+```     
+   
+```{r}
+test.stat1; test.stat2
+```      
+```{r}
+round(Boot.test.stat1[1:20],1)
+round(Boot.test.stat2[1:20],1)
+```    
+```{r}
+(Boot.test.stat1 >= test.stat1)[1:20]
+```  
+```{r}
+mean(Boot.test.stat1 >= test.stat1)
+```  
+```{r}
+mean(Boot.test.stat2 >= test.stat2)
+```  
+```{r}
+table(cd$feed)
+``` 
+```{r}
+plot(density(Boot.test.stat1), xlab=expression(group("|", bar(Yc)-bad(Ym), "|")))
+``` 
+
+# 4.5
+```{r}
+Obs.Diff.In.Means <- abs(mean(cd$weight[cd$feed =="casein"])-mean(cd$weight[cd$feed =="meatmeal"]))
+Obs.Diff.In.Means
+```
+```{r}
+Obs.Diff.In.Medians <- abs(median(cd$weight[cd$feed =="casein"])-median(cd$weight[cd$feed =="meatmeal"]))
+Obs.Diff.In.Medians
+```
+```{r}
+set.seed(13579)
+n.c <- 12 # number of obs to sample from casein
+n.m <- 11 # number of obs to sample from meatmeal
+B <- 100000
+```
+```{r}
+Boot.casein <- matrix(sample(cd$weight[cd$feed=="casein"], size=B*n.c, replace=T), ncol=B, nrow=n.c)
+```
+```{r}
+Boot.meatmeal <- matrix(sample(cd$weight[cd$feed=="meatmeal"], size=B*n.m, replace=T), ncol=B, nrow=n.m)
+```
+```{r}
+dim(Boot.casein); dim(Boot.meatmeal) #Checking the dimensions
+```
+### Check to make sure they aren't empty
+```{r}
+Boot.casein[1:5, 1:5]
+Boot.meatmeal[1:5,1:5]
+```
+### calculate the diff in means for each of the bootsamples
+```{r}
+Boot.Diff.In.Means <- colMeans(Boot.casein)-colMeans(Boot.meatmeal)
+length(Boot.Diff.In.Means) #check the length
+Boot.Diff.In.Means[1:10] #lookin at first ten
+```
+### now do same for estimate humber 2
+```{r}
+Boot.Diff.In.Medians <- apply(Boot.casein, MARGIN=2, FUN=median) - apply(Boot.meatmeal, MARGIN=2, FUN=median)
+length(Boot.Diff.In.Medians)
+Boot.Diff.In.Medians[1:10]
+```
+### Making the confidence intervals (will be using the percentile method)
+```{r}
+quantile(Boot.Diff.In.Means, prob=.025)
+quantile(Boot.Diff.In.Means, prob=0.975)
+```
+```{r}
+quantile(Boot.Diff.In.Medians, prob=.025)
+quantile(Boot.Diff.In.Medians, prob=0.975)
+```
+# R for DATA Science Questions
+## 19.2.1 3
+```{r}
+avg_NA <- function(x) {mean(is.na(x))}
+avg_NA(c(1,2,3,4,5,NA,NA,NA))
+```
+```{r}
+percent_total <- function(x) {
+  sm <- sum(x, na.rm = TRUE)
+  (x/sm)}
+percent_total(c(1,2,3,4,5))
+```
+```{r}
+variation_coeff <- function(x) {
+  s<- sd(x, na.rm = TRUE)
+  m<- mean(x, na.rm =TRUE)
+  (s/m)}
+```
+```{r}
+variation_coeff((c(1,2,3,4,5)))
+```
+## 19.4.4
+- I am sorry. I don't have anything for either of these questions.I just don't know how you could set up an argument of whether or not x is divisible by 3/5 or is at a certain time in comparison to current time. I looked up code online, but I don't get it. :p
+## 21.2.1 1
+A.
+```{r}
+mtcars_avg <- vector("double", ncol(mtcars))  
+for (i in seq_along(mtcars)) {            
+  mtcars_avg[[i]] <- mean(mtcars[[i]])     
+}
+mtcars_avg
+```
+B.
+```{r}
+iris
+```
+```{r}
+iris$Species = as.character(iris$Species) 
+iris_types <- vector("character", ncol(iris))  # 1. output
+for (i in seq_along(iris)) {            # 2. sequence
+  iris_types[[i]] <- typeof(iris[[i]])      # 3. body
+}
+iris_types
+```
+- I don't know what's up with this one. It's correct for the first four, but for the fifth column it says its an integer even though it is a factor. And I can't make a vector out of a factor for some reason. I converted Species to character just because all the inputs are names, plus it works with the loop I made.
+
+## 21.3.5 3
+```{r}
+iris_2 <- select(iris, Sepal.Width, Sepal.Length, Petal.Length, Petal.Width)
+iris_2
+```
+```{r}
+iris_2_means <- vector("list", length(iris_2))
+for (i in seq_along(iris_2)) {
+  iris_2_means[[i]] <- mean(iris_2[[i]])
+}
+iris_2_means
+```
+```{r}
+iris_2_means_map <- map_dbl(iris_2, mean)
+iris_2_means_map
+```
+- I was unable to figure out how to name the subsections of the list. So, I just used the map_dbl function cause I knew the column names would be included. Also, I didn't know how else to exclude the Species column other than using select beforehand.
+## 21.5.3 1
+A.
+```{r}
+mtcars_avg_2 <- map_dbl(mtcars, mean)
+mtcars_avg_2
+```
+B.
+```{r}
+iris_types_2 <- map_chr(iris, typeof)
+iris_types_2 
+```
+
+
+
+
+
+
+
+
+
+
