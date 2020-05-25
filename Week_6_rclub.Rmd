@@ -1,0 +1,121 @@
+---
+title: "Week_6_rclub"
+author: "Brennan"
+date: "5/25/2020"
+output: 
+  html_document: 
+    keep_md: yes
+---
+```{r}
+library(tidyverse)
+```
+
+# 4.9
+```{r}
+ DietWeigthLoss <- read.delim("~/Downloads/DietWeigthLoss.txt")
+```
+```{r}
+boxplot(DietWeigthLoss$WeightLoss~DietWeigthLoss$Diet)
+```
+
+## Ho: Mean weight loss is the same for all diets
+```{r}
+aov(formula = DietWeigthLoss$WeightLoss~DietWeigthLoss$Diet)
+```
+```{r}
+ANOVA1 = aov(formula = DietWeigthLoss$WeightLoss~DietWeigthLoss$Diet)
+```
+```{r}
+summary(ANOVA1)
+```
+```{r}
+attributes(ANOVA1)
+```
+```{r}
+ANOVA1$coefficients
+```
+```{r}
+TukeyHSD(ANOVA1)
+```
+```{r}
+plot(TukeyHSD(ANOVA1), las = 1)
+```
+```{r}
+kruskal.test(DietWeigthLoss$WeightLoss~DietWeigthLoss$Diet)
+```
+
+# 4.10
+```{r}
+LungCapData <- read.delim("~/Downloads/LungCapData.txt")
+```
+```{r}
+tab = table(LungCapData$Gender, LungCapData$Smoke)
+```
+```{r}
+barplot(tab, beside=T, legend=T)
+```
+```{r}
+chisq.test(tab, correct=T)
+```
+```{r}
+chi = chisq.test(tab, correct=T)
+```
+```{r}
+attributes(chi)
+```
+```{r}
+chi$expected
+```
+```{r}
+fisher.test(tab, conf.int=T, conf.level=0.99)
+```
+
+# Luminescence Vs. Time plot
+```{r}
+Dull.560_All_Results <- read_csv("~/Downloads/Dull 560_All_Results.csv")
+```
+```{r}
+Dull_data <- gather(Dull.560_All_Results, "12":"176", key = "Time", value = "Luminescence")
+Dull_data$Time<- as.integer(Dull_data$Time)
+dull_data <- filter(Dull_data, Time > 35)
+head(dull_data)
+```
+```{r}
+d_data <- group_by(dull_data, Genotype) %>% 
+  group_by(Time, add = T) %>%
+  summarize(Luminescence = mean(Luminescence)) 
+```
+```{r}
+ggplot(d_data, aes(Time, Luminescence, color = Genotype))+
+  geom_point()+
+  labs(title = "Luminescense over Time",
+      x = "Time (Zeitberg hours)",
+       y = "Luminescence")+
+  scale_x_continuous(breaks = seq(36,176, 16))
+```
+```{r}
+d_data$Luminescence = (d_data$Luminescence - min(d_data$Luminescence))/(max(d_data$Luminescence)
+-min(d_data$Luminescence))
+```
+```{r}
+ggplot(d_data, aes(Time, Luminescence, color = Genotype))+
+  geom_point()+
+  labs(title = "Luminescense over Time",
+      x = "Time (Zeitberg hours)",
+       y = "Luminescence (Normalized)")+
+  scale_x_continuous(breaks = seq(36,176, 16))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
