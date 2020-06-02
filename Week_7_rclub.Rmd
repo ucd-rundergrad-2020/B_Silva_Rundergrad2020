@@ -1,0 +1,129 @@
+---
+title: "Week 7"
+author: "Brennan"
+date: "6/1/2020"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r}
+library(tidyverse)
+```
+```{r}
+summary <- read.csv("~/Downloads/hypocotyl_elongation_data_rclub.csv")
+```
+
+```{r}
+summary(summary)
+```
+
+```{r}
+summary_r <- filter(summary,  germination_notes == "good")
+summary_r
+```
+
+```{r}
+summary_r$treatment = factor(summary_r$treatment, levels = c("0.5", "0.2", "0.02", "FR"))
+ggplot(summary_r, aes(treatment, hypocotyl_length, fill = genotype)) + 
+  geom_boxplot(outlier.size = -1) + 
+  geom_point(alpha = 0.5, position = position_jitterdodge()) +
+  labs(title = "Hypocotyl Elongation",
+       subtitle = "Different R:FR Ratios",
+       x = "R:FR Ratio",
+       y = "Hypocotyl Length (cm)",
+       fill = "Genotype") +
+  scale_y_continuous(breaks = c(2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22))
+```
+
+```{r}
+ggplot(summary_r, aes(hypocotyl_length, first_internode_length, fill)) + 
+  geom_point(aes(color = genotype, shape = treatment))+
+  labs(title = "Helianthus annuus",
+       subtitle = "Hypocotly length vs First Internode length",
+       x = "Hypocotyl Length (cm)",
+       y = "First Internode Length (cm)",
+       color = "Genotype",
+       shape = "R:FR Ratio") +
+  scale_x_continuous(breaks = c(2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22))+
+  scale_y_continuous(breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8))
+```
+
+
+```{r}
+lm_hypocotyl <- lm(summary_r$first_internode_length~summary_r$hypocotyl_length)
+lm_hypocotyl
+```
+```{r}
+?geom_abline
+```
+
+```{r}
+ggplot(summary_r, aes(hypocotyl_length, first_internode_length, fill)) + 
+  geom_point(aes(color = genotype, shape = treatment))+
+  geom_abline(slope= -0.2114, intercept = 4.4577, color = "purple", linetype = 6 )+
+  labs(title = "Helianthus annuus",
+       subtitle = "Hypocotly length vs First Internode length",
+       x = "Hypocotyl Length (cm)",
+       y = "First Internode Length (cm)",
+       color = "Genotype",
+       shape = "R:FR Ratio") +
+  scale_x_continuous(breaks = c(2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22))+
+  scale_y_continuous(breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8))
+```
+```{r}
+anova_treatment <- aov(formula = summary_r$hypocotyl_length~summary_r$treatment)
+anova_treatment
+```
+```{r}
+TukeyHSD(anova_treatment)
+```
+```{r}
+plot(TukeyHSD(anova_treatment), las=1)
+```
+```{r}
+summary_fr <- filter(summary_r, treatment == "FR")
+summary_fr
+summary_0.5 <- filter(summary_r, treatment == "0.5")
+summary_0.5
+summary_0.2 <- filter(summary_r, treatment == "0.2")
+summary_0.2
+summary_0.02 <- filter(summary_r, treatment == "0.02")
+summary_0.02
+```
+```{r}
+anova_fr <- aov(formula = summary_fr$hypocotyl_length~summary_fr$genotype)
+anova_fr
+TukeyHSD(anova_fr)
+plot(TukeyHSD(anova_fr), las = 1)
+```
+```{r}
+anova_0.5 <- aov(formula = summary_0.5$hypocotyl_length~summary_0.5$genotype)
+anova_0.5
+TukeyHSD(anova_0.5)
+plot(TukeyHSD(anova_0.5), las = 1)
+```
+```{r}
+anova_0.2 <- aov(formula = summary_0.2$hypocotyl_length~summary_0.2$genotype)
+anova_0.2
+TukeyHSD(anova_0.2)
+plot(TukeyHSD(anova_0.2), las = 1)
+```
+```{r}
+anova_0.02 <- aov(formula = summary_0.02$hypocotyl_length~summary_0.02$genotype)
+anova_0.02
+TukeyHSD(anova_0.02)
+plot(TukeyHSD(anova_0.02), las = 1)
+```
+```{r}
+summary_r$condition <- paste(summary_r$genotype, summary_r$treatment)
+summary_r
+```
+```{r}
+anova_condition <- aov(formula = summary_r$hypocotyl_length~summary_r$condition)
+anova_condition
+```
+```{r}
+TukeyHSD(anova_condition)
+plot(TukeyHSD(anova_condition))
+```
